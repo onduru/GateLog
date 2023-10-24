@@ -53,14 +53,16 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGateEntryScreen() {
-    var gatename by rememberSaveable { mutableStateOf("") }
-    var numberOfDosage by rememberSaveable { mutableStateOf("1") }
-    var recurrence by rememberSaveable { mutableStateOf(Recurrence.Daily.name) }
-    var endDate by rememberSaveable { mutableStateOf(Date().time) }
-    var isMorningSelected by rememberSaveable { mutableStateOf(false) }
-    var isAfternoonSelected by rememberSaveable { mutableStateOf(false) }
-    var isEveningSelected by rememberSaveable { mutableStateOf(false) }
-    var isNightSelected by rememberSaveable { mutableStateOf(false) }
+
+
+    var number_plate by rememberSaveable { mutableStateOf("") }
+    var id_number by rememberSaveable { mutableStateOf("") }
+    var destination by rememberSaveable { mutableStateOf("") }
+    var driver_name by rememberSaveable { mutableStateOf("") }
+    var person_to_see by rememberSaveable { mutableStateOf("") }
+    var todayDate by rememberSaveable { mutableStateOf(Date().time) }
+
+
 
 
     Column(
@@ -69,439 +71,76 @@ fun AddGateEntryScreen() {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-
         Text(
-            text = stringResource(id = R.string.add_gateentry),
+            text = stringResource(id = R.string.daily_gate_entries),
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.displaySmall
         )
-
         Spacer(modifier = Modifier.padding(8.dp))
 
         Text(
-            text = stringResource(id = R.string.medication_name),
+            text = stringResource(id = R.string.number_plate),
+            style = MaterialTheme.typography.bodyLarge
+        )
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = number_plate,
+            onValueChange = { number_plate = it },
+            placeholder = { Text(text = "e.g. KCK234T") },
+        )
+
+        Text(
+            text = stringResource(id = R.string.id_number),
             style = MaterialTheme.typography.bodyLarge
         )
 
         TextField(
             modifier = Modifier.fillMaxWidth(),
-            value = gatename,
-            onValueChange = { gatename = it },
-            placeholder = { Text(text = "e.g. Daniel Onduru") },
+            value = id_number,
+            onValueChange = { id_number = it },
+            placeholder = { Text(text = "e.g. 30085638") },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.NumberPassword
+            )
+
         )
-            Spacer(modifier = Modifier.padding(4.dp))
-
-            var isMaxDoseError by rememberSaveable { mutableStateOf(false) }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                val maxDose = 3
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.dosage),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    TextField(
-                        modifier = Modifier.width(128.dp),
-                        value = numberOfDosage,
-                        onValueChange = {
-                            if (it.length < maxDose) {
-                                isMaxDoseError = false
-                                numberOfDosage = it
-                            } else {
-                                isMaxDoseError = true
-                            }
-                        },
-                        trailingIcon = {
-                            if (isMaxDoseError) {
-                                Icon(
-                                    imageVector = Icons.Filled.Info,
-                                    contentDescription = "Error",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                        placeholder = { Text(text = "e.g. 1") },
-                        isError = isMaxDoseError,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                }
-                RecurrenceDropdownMenu { recurrence = it }
-            }
-
-            if (isMaxDoseError) {
-                Text(
-                    text = "You cannot have more than 99 dosage per day.",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-
-        Spacer(modifier = Modifier.padding(4.dp))
-
-        EndDateTextField { endDate = it }
-
-
-        Spacer(modifier = Modifier.padding(4.dp))
 
         Text(
-            text = stringResource(id = R.string.times_of_day),
-            style = MaterialTheme.typography.bodyLarge
-        )
-        var selectionCount by rememberSaveable { mutableStateOf(0) }
-        val context = LocalContext.current
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            FilterChip(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                selected = isMorningSelected,
-                onClick = {
-                    handleSelection(
-                        isSelected = isMorningSelected,
-                        selectionCount = selectionCount,
-                        canSelectMoreTimesOfDay = canSelectMoreTimesOfDay(
-                            selectionCount,
-                            numberOfDosage.toIntOrNull() ?: 0
-                        ),
-                        onStateChange = { count, selected ->
-                            isMorningSelected = selected
-                            selectionCount = count
-                        },
-                        onShowMaxSelectionError = {
-                            showMaxSelectionToast(numberOfDosage, context)
-                        }
-                    )
-                },
-                label = { Text(text = TimesOfDay.Morning.name) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Selected"
-                    )
-                }
-            )
-
-            FilterChip(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                selected = isAfternoonSelected,
-                onClick = {
-                    handleSelection(
-                        isSelected = isAfternoonSelected,
-                        selectionCount = selectionCount,
-                        canSelectMoreTimesOfDay = canSelectMoreTimesOfDay(
-                            selectionCount,
-                            numberOfDosage.toIntOrNull() ?: 0
-                        ),
-                        onStateChange = { count, selected ->
-                            isAfternoonSelected = selected
-                            selectionCount = count
-                        },
-                        onShowMaxSelectionError = {
-                            showMaxSelectionToast(numberOfDosage, context)
-                        }
-                    )
-                },
-                label = { Text(text = TimesOfDay.Afternoon.name) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Selected"
-                    )
-                }
-            )
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            FilterChip(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                selected = isEveningSelected,
-                onClick = {
-                    handleSelection(
-                        isSelected = isEveningSelected,
-                        selectionCount = selectionCount,
-                        canSelectMoreTimesOfDay = canSelectMoreTimesOfDay(
-                            selectionCount,
-                            numberOfDosage.toIntOrNull() ?: 0
-                        ),
-                        onStateChange = { count, selected ->
-                            isEveningSelected = selected
-                            selectionCount = count
-                        },
-                        onShowMaxSelectionError = {
-                            showMaxSelectionToast(numberOfDosage, context)
-                        }
-                    )
-                },
-                label = { Text(text = TimesOfDay.Evening.name) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Selected"
-                    )
-                }
-            )
-
-            FilterChip(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                selected = isNightSelected,
-                onClick = {
-                    handleSelection(
-                        isSelected = isNightSelected,
-                        selectionCount = selectionCount,
-                        canSelectMoreTimesOfDay = canSelectMoreTimesOfDay(
-                            selectionCount,
-                            numberOfDosage.toIntOrNull() ?: 0
-                        ),
-                        onStateChange = { count, selected ->
-                            isNightSelected = selected
-                            selectionCount = count
-                        },
-                        onShowMaxSelectionError = {
-                            showMaxSelectionToast(numberOfDosage, context)
-                        }
-                    )
-                },
-                label = { Text(text = TimesOfDay.Night.name) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Selected"
-                    )
-                }
-            )
-        }
-
-        Spacer(modifier = Modifier.padding(8.dp))
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .align(Alignment.CenterHorizontally),
-            onClick = {
-                validateMedication(
-                    name = gatename,
-                    dosage = numberOfDosage.toIntOrNull() ?: 0,
-                    recurrence = recurrence,
-                    endDate = endDate,
-                    morningSelection = isMorningSelected,
-                    afternoonSelection = isAfternoonSelected,
-                    eveningSelection = isEveningSelected,
-                    nightSelection = isNightSelected,
-                    onInvalidate = {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.value_is_empty, context.getString(it)),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    },
-                    onValidate = {
-                        // TODO: Navigate to next screen / Store medication info
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.success),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                )
-            },
-            shape = MaterialTheme.shapes.extraLarge
-        ) {
-            Text(
-                text = stringResource(id = R.string.save),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
-
-}
-
-private fun validateMedication(
-    name: String,
-    dosage: Int,
-    recurrence: String,
-    endDate: Long,
-    morningSelection: Boolean,
-    afternoonSelection: Boolean,
-    eveningSelection: Boolean,
-    nightSelection: Boolean,
-    onInvalidate: (Int) -> Unit,
-    onValidate: () -> Unit
-) {
-    if (name.isEmpty()) {
-        onInvalidate(R.string.medication_name)
-        return
-    }
-
-    if (dosage < 1) {
-        onInvalidate(R.string.dosage)
-        return
-    }
-
-    if (endDate < 1) {
-        onInvalidate(R.string.end_date)
-        return
-    }
-
-    if (!morningSelection && !afternoonSelection && !eveningSelection && !nightSelection) {
-        onInvalidate(R.string.times_of_day)
-        return
-    }
-
-    val timesOfDay = mutableListOf<TimesOfDay>()
-    if (morningSelection) timesOfDay.add(TimesOfDay.Morning)
-    if (afternoonSelection) timesOfDay.add(TimesOfDay.Afternoon)
-    if (eveningSelection) timesOfDay.add(TimesOfDay.Evening)
-    if (nightSelection) timesOfDay.add(TimesOfDay.Night)
-
-    // TODO: Out of scope for this blog post.
-    onValidate()
-}
-
-private fun showMaxSelectionToast(
-    numberOfDosage: String,
-    context: Context
-) {
-    Toast.makeText(
-        context,
-        "You're selecting ${(numberOfDosage.toIntOrNull() ?: 0) + 1} time(s) of days which is more than the number of dosage.",
-        Toast.LENGTH_LONG
-    ).show()
-}
-
-private fun handleSelection(
-    isSelected: Boolean,
-    selectionCount: Int,
-    canSelectMoreTimesOfDay: Boolean,
-    onStateChange: (Int, Boolean) -> Unit,
-    onShowMaxSelectionError: () -> Unit
-) {
-    if (isSelected) {
-        onStateChange(selectionCount - 1, !isSelected)
-    } else {
-        if (canSelectMoreTimesOfDay) {
-            onStateChange(selectionCount + 1, !isSelected)
-        } else {
-            onShowMaxSelectionError()
-        }
-    }
-}
-
-private fun canSelectMoreTimesOfDay(selectionCount: Int, numberOfDosage: Int): Boolean {
-    return selectionCount < numberOfDosage
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun EndDateTextField(endDate: (Long) -> Unit) {
-    Text(
-        text = stringResource(id = R.string.end_date),
-        style = MaterialTheme.typography.bodyLarge
-    )
-
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
-
-    val currentDate = Date().toFormattedString()
-    var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
-
-    val context = LocalContext.current
-
-    val calendar = Calendar.getInstance()
-    val year: Int = calendar.get(Calendar.YEAR)
-    val month: Int = calendar.get(Calendar.MONTH)
-    val day: Int = calendar.get(Calendar.DAY_OF_MONTH)
-    calendar.time = Date()
-
-    val datePickerDialog =
-        DatePickerDialog(context, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val newDate = Calendar.getInstance()
-            newDate.set(year, month, dayOfMonth)
-            selectedDate = "${month.toMonthName()} $dayOfMonth, $year"
-            endDate(newDate.timeInMillis)
-        }, year, month, day)
-
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        readOnly = true,
-        value = selectedDate,
-        onValueChange = {},
-        trailingIcon = { Icons.Default.DateRange },
-        interactionSource = interactionSource
-    )
-
-    if (isPressed) {
-        datePickerDialog.show()
-    }
-}
-
-fun Int.toMonthName(): String {
-    return DateFormatSymbols().months[this]
-}
-
-fun Date.toFormattedString(): String {
-    val simpleDateFormat = SimpleDateFormat("LLLL dd, yyyy", Locale.getDefault())
-    return simpleDateFormat.format(this)
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RecurrenceDropdownMenu(recurrence: (String) -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = stringResource(id = R.string.recurrence),
+            text = stringResource(id = R.string.destination),
             style = MaterialTheme.typography.bodyLarge
         )
 
-        val options = getRecurrenceList().map { it.name }
-        var expanded by remember { mutableStateOf(false) }
-        var selectedOptionText by remember { mutableStateOf(options[0]) }
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
-        ) {
-            TextField(
-                modifier = Modifier.menuAnchor(),
-                readOnly = true,
-                value = selectedOptionText,
-                onValueChange = {},
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                colors = ExposedDropdownMenuDefaults.textFieldColors(),
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                options.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        text = { Text(selectionOption) },
-                        onClick = {
-                            selectedOptionText = selectionOption
-                            recurrence(selectionOption)
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = destination,
+            onValueChange = {  destination= it },
+            placeholder = { Text(text = "e.g. accounts") },
+        )
+        Text(
+            text = stringResource(id = R.string.driver_name),
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = driver_name,
+            onValueChange = { driver_name = it },
+            placeholder = { Text(text = "e.g Kamau") },
+        )
+
+        Text(
+            text = stringResource(id = R.string.perseon_to_see),
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = person_to_see,
+            onValueChange = { person_to_see = it },
+            placeholder = { Text(text = "e.g Kamau") },
+        )
+
+
+
     }
 }
